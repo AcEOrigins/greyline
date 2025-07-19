@@ -68,13 +68,8 @@ class SecurityManager {
     }
 
     setupInputSanitization() {
-        const inputs = document.querySelectorAll('input, textarea');
-        inputs.forEach(input => {
-            input.addEventListener('input', (e) => {
-                // Only sanitize dangerous content, not normal spaces
-                e.target.value = this.sanitizeInput(e.target.value, true);
-            });
-        });
+        // Remove input sanitization so users can type spaces and all normal characters
+        // No event listeners added here
     }
 
     sanitizeInput(input, allowSpaces = false) {
@@ -102,6 +97,12 @@ class SecurityManager {
         // Basic validation
         if (!name || name.length < 2) {
             this.showError('Please enter a valid name (minimum 2 characters).');
+            return false;
+        }
+
+        // Check for spaces in email
+        if (email.includes(' ')) {
+            this.showError('Email address cannot contain spaces.');
             return false;
         }
 
