@@ -57,23 +57,13 @@ if (!empty($website)) {
     exit();
 }
 
-// Rate limiting - check for recent submissions from same IP
+// Rate limiting - check for recent submissions from same IP (moved after DB connection)
 $client_ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
-$stmt = $pdo->prepare("SELECT COUNT(*) FROM contacts WHERE created_at > DATE_SUB(NOW(), INTERVAL 1 HOUR) AND source LIKE ?");
-$stmt->execute(['%' . $client_ip . '%']);
-$recent_submissions = $stmt->fetchColumn();
 
-if ($recent_submissions > 5) {
-    http_response_code(429);
-    echo json_encode(['success' => false, 'message' => 'Too many submissions. Please try again later.']);
-    exit();
-}
-
-// Additional bot detection - check for suspicious patterns
+// Additional bot detection - check for suspicious patterns (less restrictive)
 $suspicious_patterns = [
-    '/[a-z]{10,}/i', // Repeated characters
-    '/[0-9]{10,}/', // Long number sequences
-    '/[^a-zA-Z0-9\s@.-]/', // Too many special characters
+    '/[a-z]{20,}/i', // Very long repeated characters
+    '/[0-9]{20,}/', // Very long number sequences
     '/\b(uwu|owo|owo|uwu)\b/i', // Common bot patterns
 ];
 
@@ -97,6 +87,17 @@ if ($name && $email && $subject && $message) {
             PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8mb4"
         ];
         $pdo = new PDO($dsn, $username, $password, $options);
+
+        // Rate limiting - check for recent submissions from same IP
+        $stmt = $pdo->prepare("SELECT COUNT(*) FROM contacts WHERE created_at > DATE_SUB(NOW(), INTERVAL 1 HOUR) AND source LIKE ?");
+        $stmt->execute(['%' . $client_ip . '%']);
+        $recent_submissions = $stmt->fetchColumn();
+
+        if ($recent_submissions > 5) {
+            http_response_code(429);
+            echo json_encode(['success' => false, 'message' => 'Too many submissions. Please try again later.']);
+            exit();
+        }
 
         // Generate job number
         $stmt = $pdo->query("SELECT job_number FROM contacts ORDER BY id DESC LIMIT 1");
@@ -128,6 +129,11 @@ if ($name && $email && $subject && $message) {
     }
 } else {
     http_response_code(400);
-    echo json_encode(['success' => false, 'message' => 'Error: missing required fields']);
+    echo json_encode(['success' => false, 'message' => 'Error: missing required fields', 'debug' => [
+        'name' => !empty($name),
+        'email' => !empty($email),
+        'subject' => !empty($subject),
+        'message' => !empty($message)
+    ]]);
 }
 ?>
