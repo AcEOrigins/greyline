@@ -22,18 +22,14 @@ $source = trim($_POST['source'] ?? '');
 $status  = 'New';
 $notes   = '';
 
-// Additional XSS protection - remove any remaining HTML/script tags
+// Basic XSS protection - remove HTML/script tags
 $name = strip_tags($name);
 $email = strip_tags($email);
 $subject = strip_tags($subject);
-$message = strip_tags($message, '<br><p>'); // Allow basic formatting
+$message = strip_tags($message);
 $website = strip_tags($website);
 $timestamp = strip_tags($timestamp);
 $source = strip_tags($source);
-
-// Preserve spaces in message field
-$message = str_replace('&nbsp;', ' ', $message);
-$message = preg_replace('/\s+/', ' ', $message); // Normalize spaces
 
 // Length validation to prevent oversized inputs
 if (strlen($name) > 100 || strlen($email) > 100 || strlen($subject) > 200 || strlen($message) > 2000) {
