@@ -194,7 +194,9 @@ class SecurityManager {
                 
                 // Show registration modal
                 setTimeout(() => {
-                    document.getElementById('registrationModal').style.display = 'block';
+                    const modal = document.getElementById('registrationModal');
+                    modal.style.display = 'block';
+                    document.body.style.overflow = 'hidden'; // Prevent background scrolling
                 }, 1500);
             } else {
                 this.showError(data.message || 'There was an error sending your message. Please try again.');
@@ -502,11 +504,37 @@ class UserManager {
             e.preventDefault();
             this.handleLogin();
         });
+
+        // Handle navbar login button
+        const navLoginBtn = document.getElementById('navLoginBtn');
+        if (navLoginBtn) {
+            navLoginBtn.addEventListener('click', () => {
+                this.loginModal.style.display = 'block';
+                document.body.style.overflow = 'hidden';
+            });
+        }
+
+        // Check if user is already logged in
+        this.checkLoginStatus();
+    }
+
+    checkLoginStatus() {
+        const user = JSON.parse(localStorage.getItem('user'));
+        const navLoginBtn = document.getElementById('navLoginBtn');
+        
+        if (user && navLoginBtn) {
+            navLoginBtn.textContent = `Welcome, ${user.firstName}`;
+            navLoginBtn.onclick = () => {
+                // Redirect to user portal
+                window.location.href = '/user-portal.html';
+            };
+        }
     }
 
     closeAllModals() {
         this.registrationModal.style.display = 'none';
         this.loginModal.style.display = 'none';
+        document.body.style.overflow = 'auto'; // Restore scrolling
     }
 
     handleRegistration() {
@@ -594,6 +622,8 @@ class UserManager {
                 this.closeAllModals();
                 // Store user data in localStorage
                 localStorage.setItem('user', JSON.stringify(data.user));
+                // Update navbar button
+                this.checkLoginStatus();
                 // Redirect to user portal
                 setTimeout(() => {
                     window.location.href = '/user-portal.html';

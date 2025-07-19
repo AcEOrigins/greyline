@@ -152,6 +152,24 @@ p {
     width: 100%;
 }
 
+/* Navigation Login Button */
+.nav-login-btn {
+    background: var(--gradient);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+}
+
+.nav-login-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+}
+
 .hamburger {
     display: none;
     flex-direction: column;
@@ -570,6 +588,12 @@ p {
     .nav-menu.active {
         left: 0;
     }
+    
+    .nav-login-btn {
+        margin-top: 1rem;
+        width: 100%;
+        padding: 12px 16px;
+    }
 
     .hero-container {
         grid-template-columns: 1fr;
@@ -669,20 +693,24 @@ p {
     left: 0;
     top: 0;
     width: 100%;
-    height: 100%;
+    height: 100vh;
     background-color: rgba(0, 0, 0, 0.8);
     backdrop-filter: blur(5px);
+    overflow-y: auto;
+    padding: 20px;
+    box-sizing: border-box;
 }
 
 .modal-content {
     background: var(--bg-secondary);
-    margin: 5% auto;
+    margin: 5vh auto;
     padding: 0;
     border-radius: 12px;
     width: 90%;
     max-width: 500px;
     box-shadow: var(--shadow-lg);
     animation: modalSlideIn 0.3s ease;
+    position: relative;
 }
 
 .modal-header {
@@ -744,7 +772,9 @@ p {
 }
 
 .registration-form input,
-.login-form input {
+.login-form input,
+.registration-form select,
+.login-form select {
     width: 100%;
     padding: 12px 16px;
     border: 1px solid var(--border-color);
@@ -753,6 +783,16 @@ p {
     color: var(--text-primary);
     font-size: 1rem;
     transition: all 0.3s ease;
+    box-sizing: border-box;
+}
+
+.registration-form input:focus,
+.login-form input:focus,
+.registration-form select:focus,
+.login-form select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
 .registration-form input:focus,
@@ -810,9 +850,14 @@ p {
 
 /* Responsive Modal */
 @media (max-width: 768px) {
+    .modal {
+        padding: 10px;
+    }
+    
     .modal-content {
-        margin: 10% auto;
+        margin: 10vh auto;
         width: 95%;
+        max-width: none;
     }
     
     .modal-header,
@@ -822,5 +867,9 @@ p {
     
     .form-row {
         grid-template-columns: 1fr;
+    }
+    
+    .modal-header h2 {
+        font-size: 1.5rem;
     }
 } 
