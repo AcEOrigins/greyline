@@ -9,7 +9,7 @@ header('Content-Type: application/json');
 $host = "localhost";
 $dbname = "u775021278_Greyline";
 $username = "u775021278_devAdmin";
-$password = "ay7QOXj6";
+$password = "g15^ajHAnJH=";
 
 // --- FETCH AND SANITIZE FORM DATA --- //
 $name    = trim($_POST['name'] ?? '');

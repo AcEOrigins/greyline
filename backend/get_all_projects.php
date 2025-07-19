@@ -14,7 +14,7 @@ $users_password = ">q}Q>']6LNp~g+7";
 $contacts_host = "localhost";
 $contacts_dbname = "u775021278_Greyline";
 $contacts_username = "u775021278_devAdmin";
-$contacts_password = "ay7QOXj6";
+$contacts_password = "g15^ajHAnJH=";
 
 try {
     // Connect to users database

@@ -78,7 +78,7 @@ try {
     try {
         // Connect to contacts database
         $contacts_dsn = "mysql:host=localhost;dbname=u775021278_Greyline;charset=utf8mb4";
-        $contacts_pdo = new PDO($contacts_dsn, "u775021278_devAdmin", "ay7QOXj6", $options);
+        $contacts_pdo = new PDO($contacts_dsn, "u775021278_devAdmin", "g15^ajHAnJH=", $options);
         
         $stmt = $contacts_pdo->prepare("SELECT id FROM contacts WHERE email = ? ORDER BY submitted_at DESC LIMIT 1");
         $stmt->execute([$email]);

@@ -197,6 +197,7 @@ class SecurityManager {
                 document.getElementById('regEmail').value = email;
                 document.getElementById('regFirstName').value = name.split(' ')[0] || '';
                 document.getElementById('regLastName').value = name.split(' ').slice(1).join(' ') || '';
+                // Do not auto-fill password fields
                 
                 // Show registration modal
                 setTimeout(() => {
