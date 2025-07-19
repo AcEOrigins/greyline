@@ -12,13 +12,13 @@ $username = "u775021278_devAdmin";
 $password = "ay7QOXj6";
 
 // --- FETCH AND SANITIZE FORM DATA --- //
-$name    = filter_var(trim($_POST['name'] ?? ''), FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_HIGH);
-$email   = filter_var(trim($_POST['email'] ?? ''), FILTER_SANITIZE_EMAIL);
-$subject = filter_var(trim($_POST['subject'] ?? ''), FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_HIGH);
-$message = filter_var(trim($_POST['message'] ?? ''), FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_HIGH | FILTER_FLAG_NO_ENCODE_QUOTES);
-$website = filter_var(trim($_POST['website'] ?? ''), FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_HIGH);
-$timestamp = filter_var(trim($_POST['timestamp'] ?? ''), FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_HIGH);
-$source = filter_var(trim($_POST['source'] ?? ''), FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_HIGH);
+$name    = trim($_POST['name'] ?? '');
+$email   = trim($_POST['email'] ?? '');
+$subject = trim($_POST['subject'] ?? '');
+$message = trim($_POST['message'] ?? '');
+$website = trim($_POST['website'] ?? '');
+$timestamp = trim($_POST['timestamp'] ?? '');
+$source = trim($_POST['source'] ?? '');
 $status  = 'New';
 $notes   = '';
 
@@ -121,16 +121,16 @@ if ($name && $email && $subject && $message) {
         ];
         $pdo = new PDO($dsn, $username, $password, $options);
 
-        // Rate limiting - check for recent submissions from same IP
-        $stmt = $pdo->prepare("SELECT COUNT(*) FROM contacts WHERE created_at > DATE_SUB(NOW(), INTERVAL 1 HOUR) AND source LIKE ?");
-        $stmt->execute(['%' . $client_ip . '%']);
-        $recent_submissions = $stmt->fetchColumn();
+        // Rate limiting - check for recent submissions from same IP (temporarily disabled)
+        // $stmt = $pdo->prepare("SELECT COUNT(*) FROM contacts WHERE created_at > DATE_SUB(NOW(), INTERVAL 1 HOUR) AND source LIKE ?");
+        // $stmt->execute(['%' . $client_ip . '%']);
+        // $recent_submissions = $stmt->fetchColumn();
 
-        if ($recent_submissions > 5) {
-            http_response_code(429);
-            echo json_encode(['success' => false, 'message' => 'Too many submissions. Please try again later.']);
-            exit();
-        }
+        // if ($recent_submissions > 5) {
+        //     http_response_code(429);
+        //     echo json_encode(['success' => false, 'message' => 'Too many submissions. Please try again later.']);
+        //     exit();
+        // }
 
         // Generate job number
         $stmt = $pdo->query("SELECT job_number FROM contacts ORDER BY id DESC LIMIT 1");
@@ -148,9 +148,9 @@ if ($name && $email && $subject && $message) {
         $current_timestamp = date('Y-m-d H:i:s');
         $source_with_ip = $source . ' - IP: ' . $client_ip;
         
-        $stmt = $pdo->prepare("INSERT INTO contacts (job_number, project_title, name, email, message, status, notes, subject, timestamp, source, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-        $stmt->execute([$job_number, $subject, $name, $email, $message, $status, $notes, $subject, $current_timestamp, $source_with_ip, $current_timestamp]);
+        $stmt = $pdo->prepare("INSERT INTO contacts (job_number, project_title, name, email, message, status, notes, subject, timestamp, source)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$job_number, $subject, $name, $email, $message, $status, $notes, $subject, $current_timestamp, $source_with_ip]);
 
         // Return JSON response
         echo json_encode(['success' => true, 'message' => 'Message sent successfully', 'job_number' => $job_number]);
