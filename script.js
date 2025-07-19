@@ -524,6 +524,7 @@ class UserManager {
         
         if (user && navLoginBtn) {
             navLoginBtn.textContent = `Welcome, ${user.firstName}`;
+            navLoginBtn.classList.add('logged-in');
             navLoginBtn.onclick = () => {
                 // Redirect to user portal
                 window.location.href = '/user-portal.html';
