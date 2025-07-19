@@ -10,9 +10,9 @@ session_start();
 
 // Database configuration
 $host = "localhost";
-$dbname = "u775021278_Greyline";
-$username = "u775021278_devAdmin";
-$password = "ay7QOXj6";
+$dbname = "u775021278_users_manage";
+$username = "u775021278_userAdmin";
+$password = ">q}Q>']6LNp~g+7";
 
 // Get user ID from session or request
 $userId = $_SESSION['user_id'] ?? null;
@@ -40,23 +40,50 @@ try {
     ];
     $pdo = new PDO($dsn, $username, $password, $options);
 
-    // Get user's projects
-    $stmt = $pdo->prepare("
-        SELECT 
-            c.id,
-            c.job_number,
-            c.project_title,
-            c.message,
-            c.status,
-            c.submitted_at,
-            up.project_status
-        FROM contacts c
-        INNER JOIN user_projects up ON c.id = up.contact_id
-        WHERE up.user_id = ?
-        ORDER BY c.submitted_at DESC
-    ");
-    $stmt->execute([$userId]);
-    $projects = $stmt->fetchAll();
+    // Get user's projects (cross-database query)
+    try {
+        // Connect to contacts database
+        $contacts_dsn = "mysql:host=localhost;dbname=u775021278_Greyline;charset=utf8mb4";
+        $contacts_pdo = new PDO($contacts_dsn, "u775021278_devAdmin", "ay7QOXj6", $options);
+        
+        // Get user's projects by joining across databases
+        $stmt = $pdo->prepare("
+            SELECT 
+                up.contact_id,
+                up.project_status
+            FROM user_projects up
+            WHERE up.user_id = ?
+            ORDER BY up.created_at DESC
+        ");
+        $stmt->execute([$userId]);
+        $userProjects = $stmt->fetchAll();
+        
+        // Get contact details for each project
+        $projects = [];
+        foreach ($userProjects as $userProject) {
+            $stmt = $contacts_pdo->prepare("
+                SELECT 
+                    id,
+                    job_number,
+                    project_title,
+                    message,
+                    status,
+                    submitted_at
+                FROM contacts 
+                WHERE id = ?
+            ");
+            $stmt->execute([$userProject['contact_id']]);
+            $contact = $stmt->fetch();
+            
+            if ($contact) {
+                $projects[] = array_merge($contact, ['project_status' => $userProject['project_status']]);
+            }
+        }
+    } catch (PDOException $e) {
+        http_response_code(500);
+        echo json_encode(['success' => false, 'message' => 'Database error: ' . $e->getMessage()]);
+        exit();
+    }
 
     // Format projects for frontend
     $formattedProjects = array_map(function($project) {

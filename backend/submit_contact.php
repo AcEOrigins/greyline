@@ -142,15 +142,24 @@ if ($name && $email && $subject && $message) {
         
         $contact_id = $pdo->lastInsertId();
         
-        // Check if user exists and link project to user
-        $stmt = $pdo->prepare("SELECT id FROM users WHERE email = ?");
-        $stmt->execute([$email]);
-        $user = $stmt->fetch();
-        
-        if ($user) {
-            // Link project to existing user
-            $stmt = $pdo->prepare("INSERT INTO user_projects (user_id, contact_id, project_status) VALUES (?, ?, 'pending')");
-            $stmt->execute([$user['id'], $contact_id]);
+        // Check if user exists in users database and link project to user
+        try {
+            // Connect to users database
+            $users_dsn = "mysql:host=localhost;dbname=u775021278_users_manage;charset=utf8mb4";
+            $users_pdo = new PDO($users_dsn, "u775021278_userAdmin", ">q}Q>']6LNp~g+7", $options);
+            
+            $stmt = $users_pdo->prepare("SELECT id FROM users WHERE email = ?");
+            $stmt->execute([$email]);
+            $user = $stmt->fetch();
+            
+            if ($user) {
+                // Link project to existing user
+                $stmt = $users_pdo->prepare("INSERT INTO user_projects (user_id, contact_id, project_status) VALUES (?, ?, 'pending')");
+                $stmt->execute([$user['id'], $contact_id]);
+            }
+        } catch (PDOException $e) {
+            // Log error but don't fail the contact submission
+            error_log("Failed to link user to project: " . $e->getMessage());
         }
 
         // Return JSON response

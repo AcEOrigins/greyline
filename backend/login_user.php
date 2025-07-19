@@ -10,9 +10,9 @@ session_start();
 
 // Database configuration
 $host = "localhost";
-$dbname = "u775021278_Greyline";
-$username = "u775021278_devAdmin";
-$password = "ay7QOXj6";
+$dbname = "u775021278_users_manage";
+$username = "u775021278_userAdmin";
+$password = ">q}Q>']6LNp~g+7";
 
 // Get POST data
 $data = json_decode(file_get_contents('php://input'), true);

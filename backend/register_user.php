@@ -7,9 +7,9 @@ header('Content-Type: application/json');
 
 // Database configuration
 $host = "localhost";
-$dbname = "u775021278_Greyline";
-$username = "u775021278_devAdmin";
-$password = "ay7QOXj6";
+$dbname = "u775021278_users_manage";
+$username = "u775021278_userAdmin";
+$password = ">q}Q>']6LNp~g+7";
 
 // Get POST data
 $data = json_decode(file_get_contents('php://input'), true);
@@ -74,15 +74,24 @@ try {
     
     $userId = $pdo->lastInsertId();
     
-    // Link user to existing contact if one exists
-    $stmt = $pdo->prepare("SELECT id FROM contacts WHERE email = ? ORDER BY submitted_at DESC LIMIT 1");
-    $stmt->execute([$email]);
-    $contact = $stmt->fetch();
-    
-    if ($contact) {
-        // Link the most recent contact to this user
-        $stmt = $pdo->prepare("INSERT INTO user_projects (user_id, contact_id, project_status) VALUES (?, ?, 'pending')");
-        $stmt->execute([$userId, $contact['id']]);
+    // Link user to existing contact if one exists (from contacts database)
+    try {
+        // Connect to contacts database
+        $contacts_dsn = "mysql:host=localhost;dbname=u775021278_Greyline;charset=utf8mb4";
+        $contacts_pdo = new PDO($contacts_dsn, "u775021278_devAdmin", "ay7QOXj6", $options);
+        
+        $stmt = $contacts_pdo->prepare("SELECT id FROM contacts WHERE email = ? ORDER BY submitted_at DESC LIMIT 1");
+        $stmt->execute([$email]);
+        $contact = $stmt->fetch();
+        
+        if ($contact) {
+            // Link the most recent contact to this user
+            $stmt = $pdo->prepare("INSERT INTO user_projects (user_id, contact_id, project_status) VALUES (?, ?, 'pending')");
+            $stmt->execute([$userId, $contact['id']]);
+        }
+    } catch (PDOException $e) {
+        // Log error but don't fail the registration
+        error_log("Failed to link user to existing contact: " . $e->getMessage());
     }
     
     // Send verification email (you'll need to configure email settings)
