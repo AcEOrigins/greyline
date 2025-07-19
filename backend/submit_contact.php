@@ -60,17 +60,52 @@ if (!empty($website)) {
 // Rate limiting - check for recent submissions from same IP (moved after DB connection)
 $client_ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
 
-// Additional bot detection - check for suspicious patterns (less restrictive)
-$suspicious_patterns = [
+// SEO and scam company detection
+$spam_patterns = [
+    // SEO spam keywords
+    '/\b(seo|search engine optimization|google ranking|backlink|link building)\b/i',
+    '/\b(digital marketing|social media marketing|ppc|pay per click)\b/i',
+    '/\b(lead generation|business leads|sales leads|marketing leads)\b/i',
+    '/\b(website traffic|organic traffic|increase traffic|boost traffic)\b/i',
+    
+    // Scam company patterns
+    '/\b(guaranteed|100% guarantee|money back guarantee)\b/i',
+    '/\b(limited time|act now|urgent|immediate)\b/i',
+    '/\b(free trial|no cost|no charge|completely free)\b/i',
+    '/\b(earn money|make money|work from home|get rich)\b/i',
+    
+    // Common spam phrases
+    '/\b(click here|visit our website|call now|text now)\b/i',
+    '/\b(best price|lowest price|cheapest|discount)\b/i',
+    '/\b(credit card|payment|paypal|bitcoin)\b/i',
+    
+    // Bot patterns
     '/[a-z]{20,}/i', // Very long repeated characters
     '/[0-9]{20,}/', // Very long number sequences
     '/\b(uwu|owo|owo|uwu)\b/i', // Common bot patterns
 ];
 
-foreach ($suspicious_patterns as $pattern) {
+// Check for spam patterns in all fields
+foreach ($spam_patterns as $pattern) {
     if (preg_match($pattern, $name) || preg_match($pattern, $email) || preg_match($pattern, $subject) || preg_match($pattern, $message)) {
         http_response_code(400);
-        echo json_encode(['success' => false, 'message' => 'Suspicious content detected']);
+        echo json_encode(['success' => false, 'message' => 'Message blocked - contains spam content']);
+        exit();
+    }
+}
+
+// Check for suspicious email domains
+$suspicious_domains = [
+    'gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', // Common spam domains
+    'mail.ru', 'yandex.ru', 'qq.com', '163.com', // International spam domains
+];
+
+$email_domain = strtolower(substr(strrchr($email, "@"), 1));
+if (in_array($email_domain, $suspicious_domains)) {
+    // Additional check for suspicious content with these domains
+    if (preg_match('/\b(seo|marketing|leads|traffic|guarantee|free|money)\b/i', $message)) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'message' => 'Message blocked - suspicious content detected']);
         exit();
     }
 }
