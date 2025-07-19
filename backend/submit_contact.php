@@ -117,16 +117,16 @@ if ($name && $email && $subject && $message) {
         ];
         $pdo = new PDO($dsn, $username, $password, $options);
 
-        // Rate limiting - check for recent submissions from same IP (temporarily disabled)
-        // $stmt = $pdo->prepare("SELECT COUNT(*) FROM contacts WHERE created_at > DATE_SUB(NOW(), INTERVAL 1 HOUR) AND source LIKE ?");
-        // $stmt->execute(['%' . $client_ip . '%']);
-        // $recent_submissions = $stmt->fetchColumn();
+        // Rate limiting - check for recent submissions from same IP (using timestamp column)
+        $stmt = $pdo->prepare("SELECT COUNT(*) FROM contacts WHERE timestamp > DATE_SUB(NOW(), INTERVAL 1 HOUR) AND source LIKE ?");
+        $stmt->execute(['%' . $client_ip . '%']);
+        $recent_submissions = $stmt->fetchColumn();
 
-        // if ($recent_submissions > 5) {
-        //     http_response_code(429);
-        //     echo json_encode(['success' => false, 'message' => 'Too many submissions. Please try again later.']);
-        //     exit();
-        // }
+        if ($recent_submissions > 5) {
+            http_response_code(429);
+            echo json_encode(['success' => false, 'message' => 'Too many submissions. Please try again later.']);
+            exit();
+        }
 
         // Generate job number
         $stmt = $pdo->query("SELECT job_number FROM contacts ORDER BY id DESC LIMIT 1");
