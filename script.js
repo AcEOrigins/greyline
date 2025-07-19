@@ -77,12 +77,13 @@ class SecurityManager {
     }
 
     sanitizeInput(input) {
-        // Remove potentially dangerous characters and scripts
+        // Remove potentially dangerous characters and scripts while preserving spaces
         return input
             .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
             .replace(/javascript:/gi, '')
             .replace(/on\w+\s*=/gi, '')
             .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '')
+            .replace(/\s+/g, ' ') // Replace multiple spaces with single space
             .trim();
     }
 

@@ -15,8 +15,8 @@ $password = "ay7QOXj6";
 $name    = filter_var(trim($_POST['name'] ?? ''), FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_HIGH);
 $email   = filter_var(trim($_POST['email'] ?? ''), FILTER_SANITIZE_EMAIL);
 $subject = filter_var(trim($_POST['subject'] ?? ''), FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_HIGH);
-$message = filter_var(trim($_POST['message'] ?? ''), FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_HIGH);
-$website = filter_var(trim($_POST['website'] ?? ''), FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_HIGH); // honeypot field
+$message = filter_var(trim($_POST['message'] ?? ''), FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_HIGH | FILTER_FLAG_NO_ENCODE_QUOTES);
+$website = filter_var(trim($_POST['website'] ?? ''), FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_HIGH);
 $timestamp = filter_var(trim($_POST['timestamp'] ?? ''), FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_HIGH);
 $source = filter_var(trim($_POST['source'] ?? ''), FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_HIGH);
 $status  = 'New';
@@ -26,10 +26,14 @@ $notes   = '';
 $name = strip_tags($name);
 $email = strip_tags($email);
 $subject = strip_tags($subject);
-$message = strip_tags($message);
+$message = strip_tags($message, '<br><p>'); // Allow basic formatting
 $website = strip_tags($website);
 $timestamp = strip_tags($timestamp);
 $source = strip_tags($source);
+
+// Preserve spaces in message field
+$message = str_replace('&nbsp;', ' ', $message);
+$message = preg_replace('/\s+/', ' ', $message); // Normalize spaces
 
 // Length validation to prevent oversized inputs
 if (strlen($name) > 100 || strlen($email) > 100 || strlen($subject) > 200 || strlen($message) > 2000) {
