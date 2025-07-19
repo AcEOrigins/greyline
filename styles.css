@@ -313,6 +313,13 @@ p {
     align-items: center;
 }
 
+.about-content.centered {
+    grid-template-columns: 1fr;
+    text-align: center;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
 .about-text h2 {
     margin-bottom: 1.5rem;
     background: var(--gradient);
