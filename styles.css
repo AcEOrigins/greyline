@@ -174,7 +174,7 @@ p {
 }
 
 /* Navigation Login Button */
-.nav-login-btn {
+/* .nav-login-btn {
     background: var(--gradient);
     color: white;
     border: none;
@@ -213,7 +213,6 @@ p {
     box-shadow: var(--shadow-lg);
 }
 
-/* Logged in state styling */
 .nav-login-btn.logged-in {
     background: var(--gradient);
     color: white;
@@ -225,6 +224,7 @@ p {
     transform: translateY(-3px);
     box-shadow: var(--shadow-lg);
 }
+*/
 
 .hamburger {
     display: none;
@@ -645,14 +645,14 @@ p {
         left: 0;
     }
     
-    .nav-login-btn {
+    /* .nav-login-btn {
         margin-top: 1rem;
         margin-left: 0;
         width: 100%;
         padding: 12px 24px;
         text-align: center;
         border-radius: 25px;
-    }
+    } */
 
     .hero-container {
         grid-template-columns: 1fr;

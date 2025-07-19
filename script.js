@@ -71,20 +71,26 @@ class SecurityManager {
         const inputs = document.querySelectorAll('input, textarea');
         inputs.forEach(input => {
             input.addEventListener('input', (e) => {
-                e.target.value = this.sanitizeInput(e.target.value);
+                // Only sanitize dangerous content, not normal spaces
+                e.target.value = this.sanitizeInput(e.target.value, true);
             });
         });
     }
 
-    sanitizeInput(input) {
-        // Remove potentially dangerous characters and scripts while preserving spaces
-        return input
+    sanitizeInput(input, allowSpaces = false) {
+        // Remove potentially dangerous characters and scripts
+        let sanitized = input
             .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
             .replace(/javascript:/gi, '')
             .replace(/on\w+\s*=/gi, '')
-            .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '')
-            .replace(/\s+/g, ' ') // Replace multiple spaces with single space
-            .trim();
+            .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '');
+        if (allowSpaces) {
+            // Only collapse multiple spaces, do not remove all spaces
+            sanitized = sanitized.replace(/\s{2,}/g, ' ');
+        } else {
+            sanitized = sanitized.replace(/\s+/g, ' ');
+        }
+        return sanitized;
     }
 
     validateForm() {
