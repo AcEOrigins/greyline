@@ -117,16 +117,8 @@ if ($name && $email && $subject && $message) {
         ];
         $pdo = new PDO($dsn, $username, $password, $options);
 
-        // Rate limiting - check for recent submissions from same IP (using timestamp column)
-        $stmt = $pdo->prepare("SELECT COUNT(*) FROM contacts WHERE timestamp > DATE_SUB(NOW(), INTERVAL 1 HOUR) AND source LIKE ?");
-        $stmt->execute(['%' . $client_ip . '%']);
-        $recent_submissions = $stmt->fetchColumn();
-
-        if ($recent_submissions > 5) {
-            http_response_code(429);
-            echo json_encode(['success' => false, 'message' => 'Too many submissions. Please try again later.']);
-            exit();
-        }
+        // Rate limiting temporarily disabled - source column not in database schema
+        // TODO: Add source column to database or implement alternative rate limiting
 
         // Generate job number
         $stmt = $pdo->query("SELECT job_number FROM contacts ORDER BY id DESC LIMIT 1");
@@ -144,9 +136,9 @@ if ($name && $email && $subject && $message) {
         $current_timestamp = date('Y-m-d H:i:s');
         $source_with_ip = $source . ' - IP: ' . $client_ip;
         
-        $stmt = $pdo->prepare("INSERT INTO contacts (job_number, project_title, name, email, message, status, notes, subject, timestamp, source)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-        $stmt->execute([$job_number, $subject, $name, $email, $message, $status, $notes, $subject, $current_timestamp, $source_with_ip]);
+        $stmt = $pdo->prepare("INSERT INTO contacts (job_number, project_title, name, email, message, status, notes, submitted_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$job_number, $subject, $name, $email, $message, $status, $notes, $current_timestamp]);
 
         // Return JSON response
         echo json_encode(['success' => true, 'message' => 'Message sent successfully', 'job_number' => $job_number]);
