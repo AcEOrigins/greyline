@@ -130,8 +130,32 @@ class SecurityManager {
         submitBtn.textContent = 'Sending...';
         submitBtn.disabled = true;
 
-        // Get form data
-        const formData = new FormData(this.form);
+        // Get form data and ensure all fields are captured
+        const formData = new FormData();
+        
+        // Manually add each field to ensure proper collection
+        const name = document.getElementById('name').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const subject = document.getElementById('subject').value.trim();
+        const message = document.getElementById('message').value.trim();
+        const website = document.getElementById('website').value.trim(); // honeypot field
+        
+        // Add all form fields
+        formData.append('name', name);
+        formData.append('email', email);
+        formData.append('subject', subject);
+        formData.append('message', message);
+        formData.append('website', website); // honeypot field
+        
+        // Add timestamp for tracking
+        formData.append('timestamp', new Date().toISOString());
+        formData.append('source', 'greyline-website');
+        
+        // Debug: Log form data being sent (remove in production)
+        console.log('Form data being sent:');
+        for (let [key, value] of formData.entries()) {
+            console.log(`${key}: ${value}`);
+        }
         
         // Submit to backend
         fetch('https://greylinestudio.com/backend/submit_contact.php', {
