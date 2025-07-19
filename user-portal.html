@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Greyline Studio - User Portal. Manage your projects and track updates.">
+    <title>User Portal - Greyline Studio</title>
+    <link rel="icon" type="image/x-icon" href="assets/GreylineICO.ico">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .portal-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 120px 20px 40px;
+        }
+        
+        .portal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .user-info h1 {
+            margin: 0;
+            color: var(--text-primary);
+        }
+        
+        .user-info p {
+            margin: 0.5rem 0 0 0;
+            color: var(--text-secondary);
+        }
+        
+        .logout-btn {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        
+        .portal-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .portal-card {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+        
+        .portal-card h3 {
+            margin: 0 0 1rem 0;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .project-item {
+            background: var(--bg-primary);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        .project-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        
+        .project-title {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .project-status {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        .status-pending { background: #fbbf24; color: #92400e; }
+        .status-in-progress { background: #3b82f6; color: white; }
+        .status-completed { background: #10b981; color: white; }
+        .status-on-hold { background: #6b7280; color: white; }
+        
+        .project-details {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+        
+        .request-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .request-form textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .no-projects {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 2rem;
+        }
+        
+        @media (max-width: 768px) {
+            .portal-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .portal-header {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <h2>Greyline Studio</h2>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a href="index.html#services" class="nav-link">Services</a>
+                </li>
+                <li class="nav-item">
+                    <a href="index.html#about" class="nav-link">About</a>
+                </li>
+                <li class="nav-item">
+                    <a href="index.html#contact" class="nav-link">Contact</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="portal-container">
+        <div class="portal-header">
+            <div class="user-info">
+                <h1>Welcome, <span id="userName">User</span>!</h1>
+                <p>Manage your projects and track updates</p>
+            </div>
+            <button class="logout-btn" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+        </div>
+
+        <div class="portal-grid">
+            <!-- Projects Section -->
+            <div class="portal-card">
+                <h3><i class="fas fa-project-diagram"></i> Your Projects</h3>
+                <div id="projectsList">
+                    <div class="no-projects">
+                        <i class="fas fa-folder-open" style="font-size: 2rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+                        <p>No projects found. Your projects will appear here once they're created.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Update Request Section -->
+            <div class="portal-card">
+                <h3><i class="fas fa-edit"></i> Request Updates</h3>
+                <form id="updateRequestForm" class="request-form">
+                    <div class="form-group">
+                        <select id="projectSelect" required>
+                            <option value="">Select a project</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <select id="requestType" required>
+                            <option value="">Type of request</option>
+                            <option value="design_change">Design Change</option>
+                            <option value="content_update">Content Update</option>
+                            <option value="feature_request">Feature Request</option>
+                            <option value="bug_report">Bug Report</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" id="requestTitle" placeholder="Request Title" required>
+                    </div>
+                    <div class="form-group">
+                        <textarea id="requestDescription" placeholder="Describe your request in detail..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit Request</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="portal-card">
+            <h3><i class="fas fa-history"></i> Recent Activity</h3>
+            <div id="activityList">
+                <div class="no-projects">
+                    <i class="fas fa-clock" style="font-size: 2rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+                    <p>No recent activity. Updates will appear here.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Check if user is logged in
+        function checkAuth() {
+            const user = JSON.parse(localStorage.getItem('user'));
+            if (!user) {
+                window.location.href = 'index.html';
+                return;
+            }
+            
+            // Display user name
+            document.getElementById('userName').textContent = user.firstName || user.email;
+            
+            // Load user data
+            loadUserData();
+        }
+
+        // Load user projects and data
+        function loadUserData() {
+            const user = JSON.parse(localStorage.getItem('user'));
+            
+            // Fetch user's projects from API
+            fetch('https://greylinestudio.com/backend/get_user_projects.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ user_id: user.id })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    displayProjects(data.projects);
+                    populateProjectSelect(data.projects);
+                } else {
+                    console.error('Failed to load projects:', data.message);
+                    displayProjects([]);
+                    populateProjectSelect([]);
+                }
+            })
+            .catch(error => {
+                console.error('Error loading projects:', error);
+                displayProjects([]);
+                populateProjectSelect([]);
+            });
+        }
+
+        // Display projects
+        function displayProjects(projects) {
+            const projectsList = document.getElementById('projectsList');
+            
+            if (projects.length === 0) {
+                projectsList.innerHTML = `
+                    <div class="no-projects">
+                        <i class="fas fa-folder-open" style="font-size: 2rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+                        <p>No projects found. Your projects will appear here once they're created.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            projectsList.innerHTML = projects.map(project => `
+                <div class="project-item">
+                    <div class="project-header">
+                        <div class="project-title">${project.title}</div>
+                        <span class="project-status status-${project.status.replace('_', '-')}">${project.status.replace('_', ' ').toUpperCase()}</span>
+                    </div>
+                    <div class="project-details">
+                        <p>${project.description}</p>
+                        <small>Submitted: ${new Date(project.submitted_at).toLocaleDateString()}</small>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Populate project select dropdown
+        function populateProjectSelect(projects) {
+            const projectSelect = document.getElementById('projectSelect');
+            projectSelect.innerHTML = '<option value="">Select a project</option>';
+            
+            projects.forEach(project => {
+                const option = document.createElement('option');
+                option.value = project.id;
+                option.textContent = project.title;
+                projectSelect.appendChild(option);
+            });
+        }
+
+        // Handle update request form submission
+        document.getElementById('updateRequestForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                projectId: document.getElementById('projectSelect').value,
+                requestType: document.getElementById('requestType').value,
+                title: document.getElementById('requestTitle').value,
+                description: document.getElementById('requestDescription').value
+            };
+            
+            // Show loading state
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = 'Submitting...';
+            submitBtn.disabled = true;
+            
+            // Simulate API call (replace with actual API call)
+            setTimeout(() => {
+                showNotification('Update request submitted successfully!', 'success');
+                this.reset();
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+            }, 1500);
+        });
+
+        // Logout function
+        function logout() {
+            localStorage.removeItem('user');
+            window.location.href = 'index.html';
+        }
+
+        // Show notification
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            notification.textContent = message;
+            
+            notification.style.cssText = `
+                position: fixed;
+                top: 100px;
+                right: 20px;
+                padding: 15px 20px;
+                border-radius: 8px;
+                color: white;
+                font-weight: 500;
+                z-index: 10001;
+                transform: translateX(100%);
+                transition: transform 0.3s ease;
+                max-width: 300px;
+                ${type === 'error' ? 'background: #ef4444;' : 'background: #10b981;'}
+            `;
+
+            document.body.appendChild(notification);
+
+            // Animate in
+            setTimeout(() => {
+                notification.style.transform = 'translateX(0)';
+            }, 100);
+
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }, 5000);
+        }
+
+        // Initialize portal
+        checkAuth();
+    </script>
+</body>
+</html> 

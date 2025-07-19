@@ -219,7 +219,8 @@
                             <input type="text" id="website" name="website" tabindex="-1" autocomplete="off">
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-primary">Send Message</button>
+                    <button type="submit" class="btn btn-primary">Send Message & Create Account</button>
+                    <p class="form-note">By submitting this form, you'll create a free account to track your project and manage updates.</p>
                 </form>
             </div>
         </div>
@@ -261,6 +262,76 @@
             </div>
         </div>
     </footer>
+
+    <!-- Registration Modal -->
+    <div id="registrationModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Create Your Account</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p class="modal-description">Complete your registration to access your project dashboard and track updates.</p>
+                
+                <form id="registrationForm" class="registration-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <input type="text" id="regFirstName" name="firstName" placeholder="First Name" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" id="regLastName" name="lastName" placeholder="Last Name" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <input type="email" id="regEmail" name="email" placeholder="Email Address" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" id="regCompany" name="companyName" placeholder="Company Name (Optional)">
+                    </div>
+                    <div class="form-group">
+                        <input type="tel" id="regPhone" name="phone" placeholder="Phone Number (Optional)">
+                    </div>
+                    <div class="form-group">
+                        <input type="password" id="regPassword" name="password" placeholder="Create Password" required>
+                        <small class="password-hint">Minimum 8 characters</small>
+                    </div>
+                    <div class="form-group">
+                        <input type="password" id="regConfirmPassword" name="confirmPassword" placeholder="Confirm Password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Create Account</button>
+                </form>
+                
+                <div class="login-link">
+                    <p>Already have an account? <a href="#" id="showLogin">Log In</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Log In</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="loginForm" class="login-form">
+                    <div class="form-group">
+                        <input type="email" id="loginEmail" name="email" placeholder="Email Address" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="password" id="loginPassword" name="password" placeholder="Password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Log In</button>
+                </form>
+                
+                <div class="register-link">
+                    <p>Don't have an account? <a href="#" id="showRegister">Create Account</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="script.js"></script>
 </body>

@@ -184,8 +184,18 @@ class SecurityManager {
         })
         .then(data => {
             if (data.success) {
-                this.showSuccess('Thank you! Your message has been sent successfully. We\'ll get back to you soon.');
+                this.showSuccess('Message sent successfully! Now let\'s create your account to track your project.');
                 this.form.reset();
+                
+                // Pre-fill registration form with contact form data
+                document.getElementById('regEmail').value = email;
+                document.getElementById('regFirstName').value = name.split(' ')[0] || '';
+                document.getElementById('regLastName').value = name.split(' ').slice(1).join(' ') || '';
+                
+                // Show registration modal
+                setTimeout(() => {
+                    document.getElementById('registrationModal').style.display = 'block';
+                }, 1500);
             } else {
                 this.showError(data.message || 'There was an error sending your message. Please try again.');
             }
@@ -443,6 +453,212 @@ class PerformanceManager {
     }
 }
 
+// User Registration and Login Manager
+class UserManager {
+    constructor() {
+        this.registrationModal = document.getElementById('registrationModal');
+        this.loginModal = document.getElementById('loginModal');
+        this.registrationForm = document.getElementById('registrationForm');
+        this.loginForm = document.getElementById('loginForm');
+        this.initUserManagement();
+    }
+
+    initUserManagement() {
+        // Modal close buttons
+        document.querySelectorAll('.close').forEach(closeBtn => {
+            closeBtn.addEventListener('click', () => {
+                this.closeAllModals();
+            });
+        });
+
+        // Close modal when clicking outside
+        window.addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal')) {
+                this.closeAllModals();
+            }
+        });
+
+        // Switch between login and registration
+        document.getElementById('showLogin').addEventListener('click', (e) => {
+            e.preventDefault();
+            this.registrationModal.style.display = 'none';
+            this.loginModal.style.display = 'block';
+        });
+
+        document.getElementById('showRegister').addEventListener('click', (e) => {
+            e.preventDefault();
+            this.loginModal.style.display = 'none';
+            this.registrationModal.style.display = 'block';
+        });
+
+        // Handle registration form submission
+        this.registrationForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.handleRegistration();
+        });
+
+        // Handle login form submission
+        this.loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.handleLogin();
+        });
+    }
+
+    closeAllModals() {
+        this.registrationModal.style.display = 'none';
+        this.loginModal.style.display = 'none';
+    }
+
+    handleRegistration() {
+        const formData = {
+            email: document.getElementById('regEmail').value.trim(),
+            password: document.getElementById('regPassword').value,
+            firstName: document.getElementById('regFirstName').value.trim(),
+            lastName: document.getElementById('regLastName').value.trim(),
+            companyName: document.getElementById('regCompany').value.trim(),
+            phone: document.getElementById('regPhone').value.trim()
+        };
+
+        // Validation
+        if (formData.password !== document.getElementById('regConfirmPassword').value) {
+            this.showNotification('Passwords do not match', 'error');
+            return;
+        }
+
+        if (formData.password.length < 8) {
+            this.showNotification('Password must be at least 8 characters long', 'error');
+            return;
+        }
+
+        // Show loading state
+        const submitBtn = this.registrationForm.querySelector('button[type="submit"]');
+        const originalText = submitBtn.textContent;
+        submitBtn.textContent = 'Creating Account...';
+        submitBtn.disabled = true;
+
+        // Submit registration
+        fetch('https://greylinestudio.com/backend/register_user.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                this.showNotification(data.message, 'success');
+                this.closeAllModals();
+                // Redirect to user portal or show success message
+                setTimeout(() => {
+                    window.location.href = '/user-portal.html';
+                }, 2000);
+            } else {
+                this.showNotification(data.message, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Registration error:', error);
+            this.showNotification('Registration failed. Please try again.', 'error');
+        })
+        .finally(() => {
+            submitBtn.textContent = originalText;
+            submitBtn.disabled = false;
+        });
+    }
+
+    handleLogin() {
+        const formData = {
+            email: document.getElementById('loginEmail').value.trim(),
+            password: document.getElementById('loginPassword').value
+        };
+
+        // Show loading state
+        const submitBtn = this.loginForm.querySelector('button[type="submit"]');
+        const originalText = submitBtn.textContent;
+        submitBtn.textContent = 'Logging In...';
+        submitBtn.disabled = true;
+
+        // Submit login
+        fetch('https://greylinestudio.com/backend/login_user.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                this.showNotification(data.message, 'success');
+                this.closeAllModals();
+                // Store user data in localStorage
+                localStorage.setItem('user', JSON.stringify(data.user));
+                // Redirect to user portal
+                setTimeout(() => {
+                    window.location.href = '/user-portal.html';
+                }, 1500);
+            } else {
+                this.showNotification(data.message, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Login error:', error);
+            this.showNotification('Login failed. Please try again.', 'error');
+        })
+        .finally(() => {
+            submitBtn.textContent = originalText;
+            submitBtn.disabled = false;
+        });
+    }
+
+    showNotification(message, type) {
+        // Remove existing notifications
+        const existingNotification = document.querySelector('.notification');
+        if (existingNotification) {
+            existingNotification.remove();
+        }
+
+        // Create notification
+        const notification = document.createElement('div');
+        notification.className = `notification notification-${type}`;
+        notification.textContent = message;
+        
+        // Style notification
+        notification.style.cssText = `
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            z-index: 10001;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            max-width: 300px;
+            ${type === 'error' ? 'background: #ef4444;' : 'background: #10b981;'}
+        `;
+
+        document.body.appendChild(notification);
+
+        // Animate in
+        setTimeout(() => {
+            notification.style.transform = 'translateX(0)';
+        }, 100);
+
+        // Auto remove after 5 seconds
+        setTimeout(() => {
+            notification.style.transform = 'translateX(100%)';
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 300);
+        }, 5000);
+    }
+}
+
 // Initialize all managers when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
     // Initialize security manager first
@@ -453,6 +669,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const scrollAnimationManager = new ScrollAnimationManager();
     const codeAnimationManager = new CodeAnimationManager();
     const performanceManager = new PerformanceManager();
+    const userManager = new UserManager();
 
     // Add some interactive features
     addInteractiveFeatures();

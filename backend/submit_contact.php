@@ -139,6 +139,19 @@ if ($name && $email && $subject && $message) {
         $stmt = $pdo->prepare("INSERT INTO contacts (job_number, project_title, name, email, message, status, notes, submitted_at)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
         $stmt->execute([$job_number, $subject, $name, $email, $message, $status, $notes, $current_timestamp]);
+        
+        $contact_id = $pdo->lastInsertId();
+        
+        // Check if user exists and link project to user
+        $stmt = $pdo->prepare("SELECT id FROM users WHERE email = ?");
+        $stmt->execute([$email]);
+        $user = $stmt->fetch();
+        
+        if ($user) {
+            // Link project to existing user
+            $stmt = $pdo->prepare("INSERT INTO user_projects (user_id, contact_id, project_status) VALUES (?, ?, 'pending')");
+            $stmt->execute([$user['id'], $contact_id]);
+        }
 
         // Return JSON response
         echo json_encode(['success' => true, 'message' => 'Message sent successfully', 'job_number' => $job_number]);
