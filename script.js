@@ -72,22 +72,6 @@ class SecurityManager {
         // No event listeners added here
     }
 
-    sanitizeInput(input, allowSpaces = false) {
-        // Remove potentially dangerous characters and scripts
-        let sanitized = input
-            .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-            .replace(/javascript:/gi, '')
-            .replace(/on\w+\s*=/gi, '')
-            .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '');
-        if (allowSpaces) {
-            // Only collapse multiple spaces, do not remove all spaces
-            sanitized = sanitized.replace(/\s{2,}/g, ' ');
-        } else {
-            sanitized = sanitized.replace(/\s+/g, ' ');
-        }
-        return sanitized;
-    }
-
     validateForm() {
         const name = document.getElementById('name').value.trim();
         const email = document.getElementById('email').value.trim();
