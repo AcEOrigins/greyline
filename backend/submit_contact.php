@@ -6,10 +6,10 @@ header('Access-Control-Allow-Headers: Content-Type');
 header('Content-Type: application/json');
 
 // --- CONFIG --- //
-$host = "localhost";
+$host = "127.0.0.1";
 $dbname = "u775021278_Greyline";
 $username = "u775021278_devAdmin";
-$password = "g15^ajHAnJH=";
+$password = ">q}Q>']6LNp~g+7";
 
 // --- FETCH AND SANITIZE FORM DATA --- //
 $name    = trim($_POST['name'] ?? '');
@@ -145,7 +145,7 @@ if ($name && $email && $subject && $message) {
         // Check if user exists in users database and link project to user
         try {
             // Connect to users database
-            $users_dsn = "mysql:host=localhost;dbname=u775021278_users_manage;charset=utf8mb4";
+            $users_dsn = "mysql:host=127.0.0.1;dbname=u775021278_users_manage;charset=utf8mb4";
             $users_pdo = new PDO($users_dsn, "u775021278_userAdmin", ">q}Q>']6LNp~g+7", $options);
             
             $stmt = $users_pdo->prepare("SELECT id FROM users WHERE email = ?");

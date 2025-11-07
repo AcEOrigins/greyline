@@ -9,7 +9,7 @@ header('Content-Type: application/json');
 session_start();
 
 // Database configuration
-$host = "localhost";
+$host = "127.0.0.1";
 $dbname = "u775021278_users_manage";
 $username = "u775021278_userAdmin";
 $password = ">q}Q>']6LNp~g+7";

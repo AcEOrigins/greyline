@@ -6,7 +6,7 @@ header('Access-Control-Allow-Headers: Content-Type, Authorization');
 header('Content-Type: application/json');
 
 // Database configuration
-$host = "localhost";
+$host = "127.0.0.1";
 $dbname = "u775021278_users_manage";
 $username = "u775021278_userAdmin";
 $password = ">q}Q>']6LNp~g+7";

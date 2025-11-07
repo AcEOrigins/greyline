@@ -6,15 +6,15 @@ header('Access-Control-Allow-Headers: Content-Type');
 header('Content-Type: application/json');
 
 // Database configurations
-$users_host = "localhost";
+$users_host = "127.0.0.1";
 $users_dbname = "u775021278_users_manage";
 $users_username = "u775021278_userAdmin";
 $users_password = ">q}Q>']6LNp~g+7";
 
-$contacts_host = "localhost";
+$contacts_host = "127.0.0.1";
 $contacts_dbname = "u775021278_Greyline";
 $contacts_username = "u775021278_devAdmin";
-$contacts_password = "g15^ajHAnJH=";
+$contacts_password = ">q}Q>']6LNp~g+7";
 
 try {
     // Connect to users database

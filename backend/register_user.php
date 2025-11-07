@@ -6,7 +6,7 @@ header('Access-Control-Allow-Headers: Content-Type');
 header('Content-Type: application/json');
 
 // Database configuration
-$host = "localhost";
+$host = "127.0.0.1";
 $dbname = "u775021278_users_manage";
 $username = "u775021278_userAdmin";
 $password = ">q}Q>']6LNp~g+7";
@@ -77,8 +77,8 @@ try {
     // Link user to existing contact if one exists (from contacts database)
     try {
         // Connect to contacts database
-        $contacts_dsn = "mysql:host=localhost;dbname=u775021278_Greyline;charset=utf8mb4";
-        $contacts_pdo = new PDO($contacts_dsn, "u775021278_devAdmin", "g15^ajHAnJH=", $options);
+        $contacts_dsn = "mysql:host=127.0.0.1;dbname=u775021278_Greyline;charset=utf8mb4";
+        $contacts_pdo = new PDO($contacts_dsn, "u775021278_devAdmin", ">q}Q>']6LNp~g+7", $options);
         
         $stmt = $contacts_pdo->prepare("SELECT id FROM contacts WHERE email = ? ORDER BY submitted_at DESC LIMIT 1");
         $stmt->execute([$email]);

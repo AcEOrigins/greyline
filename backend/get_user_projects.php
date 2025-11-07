@@ -9,7 +9,7 @@ header('Content-Type: application/json');
 session_start();
 
 // Database configuration
-$host = "localhost";
+$host = "127.0.0.1";
 $dbname = "u775021278_users_manage";
 $username = "u775021278_userAdmin";
 $password = ">q}Q>']6LNp~g+7";
@@ -43,8 +43,8 @@ try {
     // Get user's projects (cross-database query)
     try {
         // Connect to contacts database
-        $contacts_dsn = "mysql:host=localhost;dbname=u775021278_Greyline;charset=utf8mb4";
-        $contacts_pdo = new PDO($contacts_dsn, "u775021278_devAdmin", "g15^ajHAnJH=", $options);
+        $contacts_dsn = "mysql:host=127.0.0.1;dbname=u775021278_Greyline;charset=utf8mb4";
+        $contacts_pdo = new PDO($contacts_dsn, "u775021278_devAdmin", ">q}Q>']6LNp~g+7", $options);
         
         // Get user's projects by joining across databases
         $stmt = $pdo->prepare("
