@@ -12,7 +12,7 @@ session_start();
 $host = "127.0.0.1";
 $dbname = "u775021278_users_manage";
 $username = "u775021278_userAdmin";
-$password = ">q}Q>']6LNp~g+7";
+$db_password = ">q}Q>']6LNp~g+7";
 
 // Get POST data
 $data = json_decode(file_get_contents('php://input'), true);
@@ -36,7 +36,7 @@ try {
         PDO::ATTR_EMULATE_PREPARES => false,
         PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8mb4"
     ];
-    $pdo = new PDO($dsn, $username, $password, $options);
+    $pdo = new PDO($dsn, $username, $db_password, $options);
 
     // Get user by email
     $stmt = $pdo->prepare("SELECT id, email, password_hash, first_name, last_name, company_name, phone, email_verified, is_active FROM users WHERE email = ?");

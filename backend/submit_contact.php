@@ -11,6 +11,11 @@ $dbname = "u775021278_Greyline";
 $username = "u775021278_devAdmin";
 $password = ">q}Q>']6LNp~g+7";
 
+// Users database configuration
+$users_dbname = "u775021278_users_manage";
+$users_username = "u775021278_userAdmin";
+$users_password = ">q}Q>']6LNp~g+7";
+
 // --- FETCH AND SANITIZE FORM DATA --- //
 $name    = trim($_POST['name'] ?? '');
 $email   = trim($_POST['email'] ?? '');
@@ -145,8 +150,8 @@ if ($name && $email && $subject && $message) {
         // Check if user exists in users database and link project to user
         try {
             // Connect to users database
-            $users_dsn = "mysql:host=127.0.0.1;dbname=u775021278_users_manage;charset=utf8mb4";
-            $users_pdo = new PDO($users_dsn, "u775021278_userAdmin", ">q}Q>']6LNp~g+7", $options);
+            $users_dsn = "mysql:host=$host;dbname=$users_dbname;charset=utf8mb4";
+            $users_pdo = new PDO($users_dsn, $users_username, $users_password, $options);
             
             $stmt = $users_pdo->prepare("SELECT id FROM users WHERE email = ?");
             $stmt->execute([$email]);

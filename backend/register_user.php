@@ -9,7 +9,7 @@ header('Content-Type: application/json');
 $host = "127.0.0.1";
 $dbname = "u775021278_users_manage";
 $username = "u775021278_userAdmin";
-$password = ">q}Q>']6LNp~g+7";
+$db_password = ">q}Q>']6LNp~g+7";
 
 // Get POST data
 $data = json_decode(file_get_contents('php://input'), true);
@@ -49,7 +49,7 @@ try {
         PDO::ATTR_EMULATE_PREPARES => false,
         PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8mb4"
     ];
-    $pdo = new PDO($dsn, $username, $password, $options);
+    $pdo = new PDO($dsn, $username, $db_password, $options);
 
     // Check if email already exists
     $stmt = $pdo->prepare("SELECT id FROM users WHERE email = ?");
