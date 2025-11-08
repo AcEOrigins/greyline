@@ -258,17 +258,111 @@
                 if (data.success) {
                     displayProjects(data.projects);
                     populateProjectSelect(data.projects);
+                    // Load notes for all projects
+                    loadRecentActivity(data.projects, user.id);
                 } else {
                     console.error('Failed to load projects:', data.message);
                     displayProjects([]);
                     populateProjectSelect([]);
+                    displayRecentActivity([]);
                 }
             })
             .catch(error => {
                 console.error('Error loading projects:', error);
                 displayProjects([]);
                 populateProjectSelect([]);
+                displayRecentActivity([]);
             });
+        }
+
+        // Load recent activity (notes) for all user projects
+        function loadRecentActivity(projects, userId) {
+            if (!projects || projects.length === 0) {
+                displayRecentActivity([]);
+                return;
+            }
+
+            // Fetch notes for all projects
+            const notePromises = projects.map(project => {
+                return fetch(`https://greylinestudio.com/backend/notes_api.php?user_id=${userId}&contact_id=${project.id}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success && data.notes) {
+                            // Add project info to each note
+                            return data.notes.map(note => ({
+                                ...note,
+                                projectTitle: project.title,
+                                projectId: project.id
+                            }));
+                        }
+                        return [];
+                    })
+                    .catch(error => {
+                        console.error(`Error loading notes for project ${project.id}:`, error);
+                        return [];
+                    });
+            });
+
+            Promise.all(notePromises)
+                .then(allNotes => {
+                    // Flatten and sort by created_at (most recent first)
+                    const flattenedNotes = allNotes.flat();
+                    flattenedNotes.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+                    // Show only the 10 most recent
+                    displayRecentActivity(flattenedNotes.slice(0, 10));
+                })
+                .catch(error => {
+                    console.error('Error loading activity:', error);
+                    displayRecentActivity([]);
+                });
+        }
+
+        // Display recent activity
+        function displayRecentActivity(notes) {
+            const activityList = document.getElementById('activityList');
+            
+            if (!notes || notes.length === 0) {
+                activityList.innerHTML = `
+                    <div class="no-projects">
+                        <i class="fas fa-clock" style="font-size: 2rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+                        <p>No recent activity. Your update requests will appear here.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            activityList.innerHTML = notes.map(note => {
+                const date = new Date(note.created_at);
+                const typeLabels = {
+                    'design_change': 'Design Change',
+                    'content_update': 'Content Update',
+                    'feature_request': 'Feature Request',
+                    'bug_report': 'Bug Report',
+                    'other': 'Other',
+                    'general': 'General'
+                };
+                const typeLabel = typeLabels[note.note_type] || note.note_type;
+                const createdBy = note.created_by === 'user' ? 'You' : 'Team';
+                
+                return `
+                    <div class="project-item" style="margin-bottom: 1rem;">
+                        <div class="project-header">
+                            <div class="project-title">${note.note_title}</div>
+                            <span class="project-status" style="background: #3b82f6; color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem;">
+                                ${typeLabel}
+                            </span>
+                        </div>
+                        <div class="project-details">
+                            <p style="margin: 0.5rem 0;">${note.note_content.substring(0, 150)}${note.note_content.length > 150 ? '...' : ''}</p>
+                            <small style="color: var(--text-muted);">
+                                Project: ${note.projectTitle || 'Unknown'} | 
+                                By: ${createdBy} | 
+                                ${date.toLocaleDateString()} ${date.toLocaleTimeString()}
+                            </small>
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
 
         // Display projects
@@ -304,10 +398,14 @@
             const projectSelect = document.getElementById('projectSelect');
             projectSelect.innerHTML = '<option value="">Select a project</option>';
             
+            if (!projects || projects.length === 0) {
+                return;
+            }
+            
             projects.forEach(project => {
                 const option = document.createElement('option');
-                option.value = project.id;
-                option.textContent = project.title;
+                option.value = project.id; // This is the contact_id
+                option.textContent = `${project.title} (${project.jobNumber || 'N/A'})`;
                 projectSelect.appendChild(option);
             });
         }
@@ -316,12 +414,27 @@
         document.getElementById('updateRequestForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
-            const formData = {
-                projectId: document.getElementById('projectSelect').value,
-                requestType: document.getElementById('requestType').value,
-                title: document.getElementById('requestTitle').value,
-                description: document.getElementById('requestDescription').value
-            };
+            const user = JSON.parse(localStorage.getItem('user'));
+            if (!user || !user.id) {
+                showNotification('Please log in to submit a request', 'error');
+                return;
+            }
+            
+            const contactId = document.getElementById('projectSelect').value;
+            const requestType = document.getElementById('requestType').value;
+            const title = document.getElementById('requestTitle').value.trim();
+            const description = document.getElementById('requestDescription').value.trim();
+            
+            // Validation
+            if (!contactId) {
+                showNotification('Please select a project', 'error');
+                return;
+            }
+            
+            if (!title || !description) {
+                showNotification('Please fill in all required fields', 'error');
+                return;
+            }
             
             // Show loading state
             const submitBtn = this.querySelector('button[type="submit"]');
@@ -329,13 +442,45 @@
             submitBtn.textContent = 'Submitting...';
             submitBtn.disabled = true;
             
-            // Simulate API call (replace with actual API call)
-            setTimeout(() => {
-                showNotification('Update request submitted successfully!', 'success');
-                this.reset();
+            // Prepare note data
+            const noteData = {
+                user_id: user.id,
+                contact_id: parseInt(contactId),
+                note_title: title,
+                note_content: description,
+                note_type: requestType || 'other',
+                priority: 'medium',
+                created_by: 'user',
+                is_private: false
+            };
+            
+            // Submit to notes API
+            fetch('https://greylinestudio.com/backend/notes_api.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(noteData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification('Update request submitted successfully!', 'success');
+                    this.reset();
+                    // Reload user data to show the new note in activity
+                    loadUserData();
+                } else {
+                    showNotification(data.message || 'Failed to submit request', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error submitting request:', error);
+                showNotification('An error occurred. Please try again.', 'error');
+            })
+            .finally(() => {
                 submitBtn.textContent = originalText;
                 submitBtn.disabled = false;
-            }, 1500);
+            });
         });
 
         // Logout function

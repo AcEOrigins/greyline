@@ -67,9 +67,9 @@ try {
     // Generate verification token
     $verificationToken = bin2hex(random_bytes(32));
     
-    // Insert new user
-    $stmt = $pdo->prepare("INSERT INTO users (email, password_hash, first_name, last_name, company_name, phone, verification_token) 
-                          VALUES (?, ?, ?, ?, ?, ?, ?)");
+    // Insert new user with email auto-verified (for development - remove in production if email verification is needed)
+    $stmt = $pdo->prepare("INSERT INTO users (email, password_hash, first_name, last_name, company_name, phone, verification_token, email_verified) 
+                          VALUES (?, ?, ?, ?, ?, ?, ?, 1)");
     $stmt->execute([$email, $passwordHash, $firstName, $lastName, $companyName, $phone, $verificationToken]);
     
     $userId = $pdo->lastInsertId();
@@ -94,15 +94,12 @@ try {
         error_log("Failed to link user to existing contact: " . $e->getMessage());
     }
     
-    // Send verification email (you'll need to configure email settings)
-    $verificationLink = "https://greylinestudio.com/verify_email.php?token=" . $verificationToken;
-    
-    // For now, just return success. You can implement email sending later
+    // Email verification is auto-enabled for development
+    // To implement email verification: set email_verified to 0 above and create verify_email.php endpoint
     echo json_encode([
         'success' => true, 
-        'message' => 'Registration successful! Please check your email to verify your account.',
-        'user_id' => $userId,
-        'verification_link' => $verificationLink // Remove this in production
+        'message' => 'Registration successful! You can now log in.',
+        'user_id' => $userId
     ]);
 
 } catch (PDOException $e) {
