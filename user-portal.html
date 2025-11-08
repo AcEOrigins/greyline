@@ -275,22 +275,22 @@
             });
         }
 
-        // Load recent activity (notes) for all user projects
+        // Load recent activity (requests) for all user projects
         function loadRecentActivity(projects, userId) {
             if (!projects || projects.length === 0) {
                 displayRecentActivity([]);
                 return;
             }
 
-            // Fetch notes for all projects
-            const notePromises = projects.map(project => {
-                return fetch(`https://greylinestudio.com/backend/notes_api.php?user_id=${userId}&contact_id=${project.id}`)
+            // Fetch requests for all projects
+            const requestPromises = projects.map(project => {
+                return fetch(`https://greylinestudio.com/backend/user_requests_api.php?user_id=${userId}&contact_id=${project.id}`)
                     .then(response => response.json())
                     .then(data => {
-                        if (data.success && data.notes) {
-                            // Add project info to each note
-                            return data.notes.map(note => ({
-                                ...note,
+                        if (data.success && data.requests) {
+                            // Add project info to each request
+                            return data.requests.map(request => ({
+                                ...request,
                                 projectTitle: project.title,
                                 projectId: project.id
                             }));
@@ -298,18 +298,18 @@
                         return [];
                     })
                     .catch(error => {
-                        console.error(`Error loading notes for project ${project.id}:`, error);
+                        console.error(`Error loading requests for project ${project.id}:`, error);
                         return [];
                     });
             });
 
-            Promise.all(notePromises)
-                .then(allNotes => {
+            Promise.all(requestPromises)
+                .then(allRequests => {
                     // Flatten and sort by created_at (most recent first)
-                    const flattenedNotes = allNotes.flat();
-                    flattenedNotes.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+                    const flattenedRequests = allRequests.flat();
+                    flattenedRequests.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
                     // Show only the 10 most recent
-                    displayRecentActivity(flattenedNotes.slice(0, 10));
+                    displayRecentActivity(flattenedRequests.slice(0, 10));
                 })
                 .catch(error => {
                     console.error('Error loading activity:', error);
@@ -318,10 +318,10 @@
         }
 
         // Display recent activity
-        function displayRecentActivity(notes) {
+        function displayRecentActivity(requests) {
             const activityList = document.getElementById('activityList');
             
-            if (!notes || notes.length === 0) {
+            if (!requests || requests.length === 0) {
                 activityList.innerHTML = `
                     <div class="no-projects">
                         <i class="fas fa-clock" style="font-size: 2rem; margin-bottom: 1rem; opacity: 0.5;"></i>
@@ -331,34 +331,51 @@
                 return;
             }
             
-            activityList.innerHTML = notes.map(note => {
-                const date = new Date(note.created_at);
+            activityList.innerHTML = requests.map(request => {
+                const date = new Date(request.created_at);
                 const typeLabels = {
                     'design_change': 'Design Change',
                     'content_update': 'Content Update',
                     'feature_request': 'Feature Request',
                     'bug_report': 'Bug Report',
-                    'other': 'Other',
-                    'general': 'General'
+                    'other': 'Other'
                 };
-                const typeLabel = typeLabels[note.note_type] || note.note_type;
-                const createdBy = note.created_by === 'user' ? 'You' : 'Team';
+                const typeLabel = typeLabels[request.request_type] || request.request_type;
+                
+                const statusColors = {
+                    'pending': '#fbbf24',
+                    'in_progress': '#3b82f6',
+                    'completed': '#10b981',
+                    'rejected': '#ef4444',
+                    'cancelled': '#6b7280'
+                };
+                const statusColor = statusColors[request.status] || '#6b7280';
                 
                 return `
                     <div class="project-item" style="margin-bottom: 1rem;">
                         <div class="project-header">
-                            <div class="project-title">${note.note_title}</div>
-                            <span class="project-status" style="background: #3b82f6; color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem;">
-                                ${typeLabel}
-                            </span>
+                            <div class="project-title">${request.request_title}</div>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <span class="project-status" style="background: #3b82f6; color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem;">
+                                    ${typeLabel}
+                                </span>
+                                <span class="project-status" style="background: ${statusColor}; color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem;">
+                                    ${request.status.replace('_', ' ').toUpperCase()}
+                                </span>
+                            </div>
                         </div>
                         <div class="project-details">
-                            <p style="margin: 0.5rem 0;">${note.note_content.substring(0, 150)}${note.note_content.length > 150 ? '...' : ''}</p>
+                            <p style="margin: 0.5rem 0;">${request.request_description.substring(0, 150)}${request.request_description.length > 150 ? '...' : ''}</p>
                             <small style="color: var(--text-muted);">
-                                Project: ${note.projectTitle || 'Unknown'} | 
-                                By: ${createdBy} | 
+                                Project: ${request.projectTitle || 'Unknown'} | 
                                 ${date.toLocaleDateString()} ${date.toLocaleTimeString()}
                             </small>
+                            ${request.response_message ? `
+                                <div style="margin-top: 0.5rem; padding: 0.5rem; background: var(--bg-primary); border-radius: 4px; border-left: 3px solid #10b981;">
+                                    <strong style="color: #10b981;">Response:</strong>
+                                    <p style="margin: 0.25rem 0 0 0; color: var(--text-secondary);">${request.response_message}</p>
+                                </div>
+                            ` : ''}
                         </div>
                     </div>
                 `;
@@ -442,25 +459,23 @@
             submitBtn.textContent = 'Submitting...';
             submitBtn.disabled = true;
             
-            // Prepare note data
-            const noteData = {
+            // Prepare request data
+            const requestData = {
                 user_id: user.id,
                 contact_id: parseInt(contactId),
-                note_title: title,
-                note_content: description,
-                note_type: requestType || 'other',
-                priority: 'medium',
-                created_by: 'user',
-                is_private: false
+                request_title: title,
+                request_description: description,
+                request_type: requestType || 'other',
+                priority: 'medium'
             };
             
-            // Submit to notes API
-            fetch('https://greylinestudio.com/backend/notes_api.php', {
+            // Submit to user requests API
+            fetch('https://greylinestudio.com/backend/user_requests_api.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(noteData)
+                body: JSON.stringify(requestData)
             })
             .then(response => response.json())
             .then(data => {
